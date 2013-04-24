@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.2/jquery-ui.min.js"></script>
+    <script src="/js/underscore-min.js"></script>
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/le-frog/jquery-ui.min.css" />
+    <script type="text/javascript">
+        $(function() {
+            $('input.menu').button();
+            $('input.menu').next().removeClass('ui-corner-all').width(150).css({'font-size': '8pt'});
+            $($('input.menu').next()).first().addClass('ui-corner-top');
+            $($('input.menu').next()).last().addClass('ui-corner-bottom');
+            $('div#menuBar :checkbox').click(function() {
+                getData();
+            });
+        });
+        $(document).ready(function() {
+            if(navigator.userAgent.indexOf('iPhone') !== -1) {
+                $('#blank').css('right', '100px');
+            }
+            getData();
+        }).ajaxStart(function() {
+            console.log('Ajax call');
+        });
+        var getData = function() {
+            var prod = $('div#menuBar :checked').serialize();
+            var url = '/get';
+            var data = {'prod': prod};
+            $.ajax({
+                method: 'POST',
+                url: url,
+                data: data,
+                beforeSend: function(xhr) {
+                    ++ajaxCallDoneCount;
+                    console.log(xhr.status);
+                    console.log(xhr.readyState);
+                    runEffect();
+                },
+                success: function(data, status, xhr) {
+                    console.log(xhr.status);
+                    console.log(xhr.readyState);
+                    --ajaxCallDoneCount;
+                    if(ajaxCallDoneCount > 0) {
+                        return;
+                    }
+                    setData(data);
+                },
+                error: function(xhr) {
+                    console.log(xhr);
+                    setData('<i>Connection Error...</i>');
+                }
+            });
+        };
+        var ajaxCallDoneCount = 0;
+        var effectDoneFlag = true;
+        var runEffect = function() {
+            effectDoneFlag = false;
+            $('#blank').show('drop', { direction: "up", easing: 'easeOutExpo' }, 1500);
+            $( "#contents" ).hide( 'slide', {easing: 'easeOutExpo'}, 1500, function() {
+                console.log("effect end");
+                effectDoneFlag = true;
+            });
+        };
+        var setData = function(data) {
+            console.log(data);
+            if(!effectDoneFlag) {
+                console.log('wait next time...');
+                setTimeout(function() {
+                    setData(data);
+                }, 500);
+                return;
+            }
+            $('#blank').hide('drop', { direction: "up", easing: 'easeOutExpo' }, 1500);
+            console.log('set data complete');
+            $('#contents').html(data).show('slide', {easing: 'easeOutExpo'}, 1500);
+        };
+    </script>
+    <style>
+        body {
+            margin: 0;
+            border-top: 3px solid green;
+        }
+        #wrap {
+            width: 900px;
+            margin: 0 auto;
+        }
+        #logo {
+            width: 669px;
+            height: 296px;
+            margin: 0 auto;
+            background-image: url('http://www.istarbucks.co.kr/img/about_us/info_img01.jpg');
+        }
+        #title {
+            width: 100%;
+            height: 70px;
+            border-left: 3px solid green;
+            padding: 5px 0 0 10px;
+            margin-bottom: 10px;
+            border-bottom-left-radius: 10px;
+            border-top-left-radius: 10px;
+        }
+        #title #img {
+            margin-top: 10px;
+            width: 84px;
+            height: 23px;
+            background: url('http://www.istarbucks.co.kr/img/g/left_menu.gif') no-repeat;
+        }
+        #title #str {
+            margin-top: 7px;
+            height: 30px;
+            color: #bbb;
+            font-size: 8pt;
+        }
+        #menuBar, #list {
+            float: left;
+            height: 100%;
+        }
+        #menuBar {
+            width: 180px;
+        }
+        #list {
+            width: 720px;
+            height: 1000px;
+        }
+        .newProduct, .available {
+            position:absolute;
+            top:2px;
+            left:0;
+            text-align:center;
+            width:147px;
+            background:#282828;
+            font-weight:normal;
+            color:#8adf35;
+            font-size:1em;
+            padding:1px 0 4px 0;
+            font-family:Verdana, sans-serif;
+            letter-spacing:0;
+        }
+        .newProduct {
+            color:#8adf35;
+        }
+        .available {
+            color:#ff9110;
+        }
+        .soldout {
+            position:absolute;
+            top:2px;
+            right:0;
+            width:147px;
+            text-align:right;
+        }
+        .menuList {
+            list-style-type: none;
+            overflow:hidden;
+            width:696px;
+            margin-bottom:5px;
+        }
+        .menuList li {
+            float:left;
+            position:relative;
+            width:147px;
+            margin:0 27px 0 0;
+            height:205px;
+            padding-top:20px;
+            font-size:0.9em;
+            font-family:Verdana, sans-serif
+        }
+        .menuList li strong a {
+            text-decoration: none;
+            font-size: 12px;
+        }
+        .menuList li strong a:link, .menuList li strong a:visited {
+            font-weight:normal;
+            padding:2px 3px 1px;
+            color:#1d9a0b;
+            margin-top:8px;
+            margin-bottom:5px;
+            cursor:pointer
+        }
+        .menuList li strong a:hover, .menuList li strong a:active{
+            background:#1d9a0b;
+            color:#ffffff
+        }
+        #blank {
+            width: 669px;
+            height: 134px;
+            position: absolute;
+            top: 450px;
+            right: 200px;
+            background: url(http://www.istarbucks.co.kr/img/about_us/starbucks_story_img01.jpg) no-repeat;
+            padding-top: 134px;
+            font-variant: small-caps; 
+        }
+    </style>
+</head>
+<body>
+<H1></H1>
+<div id='wrap'>
+    <div id='logo'></div>
+    <div id='title'>
+        <div id='img'></div>
+        <div id='str'>Beverage & Food</div>
+    </div>
+    <div id='menuBar'>
+        <input type='checkbox' id='brewd' class='menu' name='Prod' value='P020100' checked='checked'/>
+        <label for='brewd'>Brewd Coffee</label></br>
+        <input type='checkbox' id='esprs' class='menu' name='Prod' value='P020200' />
+        <label for='esprs'>Espresso</label></br>
+        <input type='checkbox' id='refrs' class='menu' name='Prod' value='P020600' />
+        <label for='refrs'>Starbucks Refresher</label></br>
+        <input type='checkbox' id='frapu' class='menu' name='Prod' value='P020300' />
+        <label for='frapu'>Frappuccino</label></br>
+        <input type='checkbox' id='tea' class='menu' name='Prod' value='P020400' />
+        <label for='tea'>Tea</label></br>
+        <input type='checkbox' id='ect' class='menu' name='Prod' value='P020500' />
+        <label for='ect'>ect</label></br>
+    </div>
+    <div id='list'>
+        <div id='contents' style='display: none; float: left'></div>
+        <div id='blank' style=''>
+            Wait a second...
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+
+
